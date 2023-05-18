@@ -11,7 +11,7 @@ package com.PTKaBC;
 public class Main {
     public static void main(String[] args) {
         try {
-            Socket mySocket = new Socket("localhost", 26666); // Create a new socket
+            Socket mySocket = new Socket("localhost", 26695); // Create a new socket
             DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
             String msg = "!close";
             System.out.println("Sending: " + msg);
