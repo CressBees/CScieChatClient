@@ -13,7 +13,7 @@ public class Main {
         try {
             Socket mySocket = new Socket("localhost", 26695); // Create a new socket
             DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
-            String msg = "!close";
+            String msg = "newClientConnecting";
             System.out.println("Sending: " + msg);
             ISay.writeUTF(msg); // write the message
             ISay.flush(); // send the message
