@@ -17,18 +17,21 @@ public class Main {
             // This doesn't work, it sends the first message, but not any subsequent ones.
             // also doesn't receive.
             // TODO: fix this
-            Socket mySocket = new Socket("localhost", 26695); // Create a new socket
-            DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
             while(clientActive) {
+                Socket mySocket = new Socket("localhost", 26695); // Create a new socket
+                DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
                 //Set the sent message to be the one the user wants.
                 String msg = getMessage();
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
                 // Close the connection
-                if(endSession()) { // TODO: make this less annoying
-                    ISay.close();
-                    mySocket.close();
+                ISay.close();
+                mySocket.close();
+
+                //every time user sends a message, asks the client if they want to quit.
+                // TODO: make this less annoying
+                if(endSession()) {
                     clientActive = false;
                 }
             }
