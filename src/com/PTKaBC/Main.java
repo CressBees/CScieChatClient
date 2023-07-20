@@ -13,10 +13,10 @@ public class Main {
     static boolean clientActive = true; //making this static might cause unexpected errors later, keep an eye out.
     static final short attemptsAllowed = 5; // how many attempts for things like the for loop
     public static void main(String[] args) {
+        System.out.println("Starting Client...");
         try {
-            // This doesn't work, it sends the first message, but not any subsequent ones.
-            // also doesn't receive.
-            // TODO: fix this
+            System.out.println("Client active");
+            System.out.println("See Readme.txt for details and guide");
             while(clientActive) {
                 Socket mySocket = new Socket("localhost", 26695); // Create a new socket
                 DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
@@ -29,13 +29,15 @@ public class Main {
                 ISay.close();
                 mySocket.close();
 
-                //every time user sends a message, asks the client if they want to quit.
-                // TODO: make this less annoying
-                if(endSession()) {
-                    clientActive = false;
+                //if the user inputs a close command, ask them if they want to quit
+                if(msg.equals("!exit")||(msg.equals("/exit"))){
+                    clientActive = endSession();
                 }
             }
+            System.out.println("Shutting Down...");
+
         } catch (Exception e) {
+            System.out.println("Debug_ClientError");
             System.out.println(e); // Oh no, an error
         }
     }
@@ -53,10 +55,10 @@ public class Main {
             System.out.println("Do you want to quit? (Y/N)"); //y for yes, n for no.
             String clientInput = messageScanner.nextLine();
             if(clientInput.equalsIgnoreCase("y")){
-                return true; //exit
+                return false; //exit
             }
             else if(clientInput.equalsIgnoreCase("n")){
-                return false; //don't exit
+                return true; //don't exit
             }
             else{
                 System.out.println("Error, Input not recognised, please try again");
