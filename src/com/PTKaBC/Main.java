@@ -17,21 +17,21 @@ public class Main {
         try {
             System.out.println("Client active");
             System.out.println("See Readme.txt for details and guide");
+            Socket mySocket = new Socket("localhost", 26695); // Create a new socket
+            DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
             while(clientActive) {
-                Socket mySocket = new Socket("localhost", 26695); // Create a new socket
-                DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream
                 //Set the sent message to be the one the user wants.
                 String msg = getMessage();
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
                 // Close the connection
-                ISay.close();
-                mySocket.close();
 
                 //if the user inputs a close command, ask them if they want to quit
                 if(msg.equals("!exit")||(msg.equals("/exit"))){
                     clientActive = endSession();
+                    mySocket.close();
+                    ISay.close();
                 }
             }
             System.out.println("Shutting Down...");
