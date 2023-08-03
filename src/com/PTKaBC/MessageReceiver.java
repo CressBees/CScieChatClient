@@ -4,21 +4,17 @@ import java.net.*;
 
 
 public class MessageReceiver implements Runnable{
-    //this socket will correspond with another socket on the server side in the client obj
-    //serversockets on both sides, this is an unbearably stupid way of doing this, but java has forced my hand
-    public MessageReceiver(ServerSocket listenOn){
+    public MessageReceiver(DataInputStream IHear, boolean clientActive){
         try {
             System.out.println("Debug_ThreadStarted");
-            Socket mainSocket = listenOn.accept();
-            DataInputStream readFromListenOn = new DataInputStream(mainSocket.getInputStream());
 
             String receivedMessage;
 
             //Read message and then print it
             //TODO: make this good
-            while(true){
+            while(!clientActive){
                 System.out.println("Debug_PrintMessage");
-                receivedMessage = readFromListenOn.readUTF();
+                receivedMessage = IHear.readUTF();
                 System.out.println(receivedMessage);
             }
         }
@@ -27,7 +23,9 @@ public class MessageReceiver implements Runnable{
             System.out.println(e);
         }
     }
-    public void run(){
+
+    @Override
+    public void run() {
 
     }
 }

@@ -5,45 +5,47 @@ package com.PTKaBC;
  * @year: 2023
  * This is the main class of the project.
  */
- import java.io.*;
- import java.net.*;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
 
 public class Main {
     static boolean clientActive = true; //making this static might cause unexpected errors later, keep an eye out.
     static final short attemptsAllowed = 5; // how many attempts for things like the for loop
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.out.println("Starting Client...");
+        Socket mySocket = null;
         try {
-            //this server socket handles msgs received by the server
-            ServerSocket listenOn = new ServerSocket(0);
-
-            //Make a message receiver on a thread so you can send/receive messages independently
-            //IMPORTANT, there should only be one of these at any time, having multiple will cause strange errors
-            System.out.println("Debug_MessageReceiver");
-            Thread messageReceiverThread = new Thread();
-            messageReceiverThread.start();
-
             System.out.println("Client active");
             //TODO: do readme
             System.out.println("See Readme.txt for details and guide");
 
-            Socket mySocket = new Socket("localhost", 26695); // Create a new socket
+            //initialise some stuff
+            mySocket = new Socket("localhost", 26695);
             DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream, sends to server
             DataInputStream IHear = new DataInputStream(mySocket.getInputStream()); //create input stream, gets response from server
-            sendInitialData(ISay, listenOn);
-            while(clientActive) {
+
+            //Make a message receiver on a thread so you can send/receive messages independently
+            //IMPORTANT, there should only be one of these at any time, having multiple will cause strange errors
+            System.out.println("Debug_MessageReceiver");
+            MessageReceiver messageReceiver = new MessageReceiver(IHear, clientActive);
+            Thread messageReceiverThread = new Thread(messageReceiver);
+            messageReceiverThread.start();
+
+            //sendInitialData(mySocket);
+            while (clientActive) {
                 //Set the sent message to be the one the user wants.
                 String msg = getMessage();
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
 
+                //for some reason, the client breaks and throws java.util.NoSuchElementException's if this line is removed, wtf
+                //TODO: find out why this happens
                 String test = IHear.readUTF();
-                System.out.println(test);
 
                 //if the user inputs a close command, ask them if they want to quit
-                if(msg.equals("!exit")||(msg.equals("/exit"))){
+                if (msg.equals("!exit") || (msg.equals("/exit"))) {
                     clientActive = endSession();
                     mySocket.close();
                     //close the connection
@@ -54,6 +56,9 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("Debug_ClientError");
+            assert mySocket != null;
+            mySocket.close();
+            //close the connection
             System.out.println(e); // Oh no, an error
         }
     }
