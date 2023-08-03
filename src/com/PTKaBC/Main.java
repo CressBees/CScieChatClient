@@ -35,18 +35,24 @@ public class Main {
             //sendInitialData(mySocket);
             while (clientActive) {
                 //Set the sent message to be the one the user wants.
+                System.out.println("Debug_bruh56");
                 String msg = getMessage();
+                System.out.println("Debug_GotMessage");
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
 
                 //for some reason, the client breaks and throws java.util.NoSuchElementException's if this line is removed, wtf
                 //TODO: find out why this happens
-                String test = IHear.readUTF();
+                //String test = IHear.readUTF();
+
+                System.out.println("Debug_bruh1");
 
                 //if the user inputs a close command, ask them if they want to quit
                 if (msg.equals("!exit") || (msg.equals("/exit"))) {
+                    System.out.println("Debug_bruh2");
                     clientActive = endSession();
+                    System.out.println("Debug_bruh2");
                     mySocket.close();
                     //close the connection
                     ISay.close();
