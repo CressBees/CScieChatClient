@@ -28,14 +28,14 @@ public class Main {
             //Make a message receiver on a thread so you can send/receive messages independently
             //IMPORTANT, there should only be one of these at any time, having multiple will cause strange errors
             System.out.println("Debug_MessageReceiver");
-            MessageReceiver messageReceiver = new MessageReceiver(IHear, clientActive);
+            MessageReceiver messageReceiver = new MessageReceiver(IHear, ISay, clientActive);
             Thread messageReceiverThread = new Thread(messageReceiver);
             messageReceiverThread.start();
 
             //sendInitialData(mySocket);
             while (clientActive) {
                 //Set the sent message to be the one the user wants.
-                System.out.println("Debug_bruh56");
+                System.out.println("Debug_ClientActive");
                 String msg = getMessage();
                 System.out.println("Debug_GotMessage");
                 System.out.println("Sending: " + msg);
@@ -44,15 +44,15 @@ public class Main {
 
                 //for some reason, the client breaks and throws java.util.NoSuchElementException's if this line is removed, wtf
                 //TODO: find out why this happens
-                //String test = IHear.readUTF();
-
-                System.out.println("Debug_bruh1");
+                System.out.println("Debug_WaitingToHearResponse");
+                String test = IHear.readUTF();
+                System.out.println("Debug messageRecevied"+test);
 
                 //if the user inputs a close command, ask them if they want to quit
                 if (msg.equals("!exit") || (msg.equals("/exit"))) {
-                    System.out.println("Debug_bruh2");
+                    System.out.println("Debug_Exit?");
                     clientActive = endSession();
-                    System.out.println("Debug_bruh2");
+                    System.out.println("Debug_Exiting");
                     mySocket.close();
                     //close the connection
                     ISay.close();

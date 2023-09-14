@@ -4,7 +4,7 @@ import java.net.*;
 
 
 public class MessageReceiver implements Runnable{
-    public MessageReceiver(DataInputStream IHear, boolean clientActive){
+    public MessageReceiver(DataInputStream IHear, DataOutputStream ISay, boolean clientActive){
         try {
             System.out.println("Debug_ThreadStarted");
 
