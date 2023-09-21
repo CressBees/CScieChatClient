@@ -9,7 +9,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
-public class Main {
+public class Main implements Runnable{
     static boolean clientActive = true; //making this static might cause unexpected errors later, keep an eye out.
     static final short attemptsAllowed = 5; // how many attempts for things like the for loop
     public static void main(String[] args) throws IOException {
@@ -119,5 +119,10 @@ public class Main {
         //if you enter something unrecognized more than 5 times, it auto logs you out.
         System.out.println("Error, Automatically logging out");
         return true; //exit
+    }
+
+    @Override
+    public void run() {
+
     }
 }
