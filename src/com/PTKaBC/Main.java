@@ -17,6 +17,7 @@ public class Main implements Runnable{
         Socket mySocket = null;
         try {
             System.out.println("Client active");
+            System.out.println("Enter !exit to quit");
             //TODO: do readme
             System.out.println("See Readme.txt for details and guide");
 
