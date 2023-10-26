@@ -1,20 +1,28 @@
 package com.PTKaBC;
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 
 
 public class MessageReceiver implements Runnable{
-    public MessageReceiver(DataInputStream IHear, DataOutputStream ISay, boolean clientActive){
-        try {
-            System.out.println("Debug_ThreadStarted");
+    //this controls if debug statements and the like are enabled, might make a in program control, but for now, just manually control on or off
+    boolean debugMode = false;
 
-            String receivedMessage;
+    DataInputStream inputStream;
+    public MessageReceiver(DataInputStream IHear, boolean clientActive){
+        inputStream = IHear;
+    }
+
+    @Override
+    public void run() {
+        try {
+            if(debugMode){System.out.println("Debug_ThreadStarted");}
 
             //Read message and then print it
             //TODO: make this good
-            while(!clientActive){
-                System.out.println("Debug_PrintMessage");
-                receivedMessage = IHear.readUTF();
+            while(true){
+                if(debugMode){System.out.println("Debug_PrintMessage");}
+                String receivedMessage = inputStream.readUTF();
                 System.out.println(receivedMessage);
             }
         }
@@ -22,10 +30,5 @@ public class MessageReceiver implements Runnable{
             System.out.println("Debug_MessageReceiveError");
             System.out.println(e);
         }
-    }
-
-    @Override
-    public void run() {
-
     }
 }

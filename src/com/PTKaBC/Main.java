@@ -7,53 +7,57 @@ package com.PTKaBC;
  */
 import java.io.*;
 import java.net.*;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Main implements Runnable{
+    //this controls if debug statements and the like are enabled, might make a in program control, but for now, just manually control on or off
+    static boolean debugMode = false;
     static boolean clientActive = true; //making this static might cause unexpected errors later, keep an eye out.
     static final short attemptsAllowed = 5; // how many attempts for things like the for loop
+
+    static String name;
     public static void main(String[] args) throws IOException {
+        Scanner keyboardInput = new Scanner(System.in);
         System.out.println("Starting Client...");
         Socket mySocket = null;
         try {
             System.out.println("Client active");
             System.out.println("Enter !exit to quit");
-            //TODO: do readme
             System.out.println("See Readme.txt for details and guide");
+
+            System.out.println("Please choose your name");
+            name = keyboardInput.nextLine();
 
             //initialise some stuff
             mySocket = new Socket("localhost", 26695);
             DataOutputStream ISay = new DataOutputStream(mySocket.getOutputStream()); // Create an output stream, sends to server
             DataInputStream IHear = new DataInputStream(mySocket.getInputStream()); //create input stream, gets response from server
 
-            //Make a message receiver on a thread so you can send/receive messages independently
+            //Make a message receiver on a thread, so you can send/receive messages independently
             //IMPORTANT, there should only be one of these at any time, having multiple will cause strange errors
             System.out.println("Debug_MessageReceiver");
-            MessageReceiver messageReceiver = new MessageReceiver(IHear, ISay, clientActive);
-            Thread messageReceiverThread = new Thread(messageReceiver);
+            Thread messageReceiverThread = new Thread(new MessageReceiver(IHear, clientActive));
             messageReceiverThread.start();
 
-            //sendInitialData(mySocket);
+            sendInitialData(name, ISay);
+
             while (clientActive) {
                 //Set the sent message to be the one the user wants.
-                System.out.println("Debug_ClientActive");
-                String msg = getMessage();
-                System.out.println("Debug_GotMessage");
+                if(debugMode){System.out.println("Debug_ClientActive");}
+                String msg = getMessage(keyboardInput);
+                if(debugMode){System.out.println("Debug_GotMessage");}
+
+
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
 
-                //for some reason, the client breaks and throws java.util.NoSuchElementException's if this line is removed, wtf
-                //TODO: find out why this happens
-                System.out.println("Debug_WaitingToHearResponse");
-                String test = IHear.readUTF();
-                System.out.println("Debug messageRecevied"+test);
-
                 //if the user inputs a close command, ask them if they want to quit
                 if (msg.equals("!exit") || (msg.equals("/exit"))) {
-                    System.out.println("Debug_Exit?");
+                    System.out.println("Do you want to quit?");
                     clientActive = endSession();
-                    System.out.println("Debug_Exiting");
+                    if(debugMode){System.out.println("Debug_Exiting");}
                     mySocket.close();
                     //close the connection
                     ISay.close();
@@ -63,41 +67,36 @@ public class Main implements Runnable{
 
         } catch (Exception e) {
             System.out.println("Debug_ClientError");
-            assert mySocket != null;
-            mySocket.close();
+            if(mySocket != null){
+                mySocket.close();
+            }
             //close the connection
             System.out.println(e); // Oh no, an error
         }
     }
 
     //send initial info to the server so the server knows who this is
-    //rn it only includes client pn, but in future will have username and whatever else
-    private static void sendInitialData(DataOutputStream ISay, ServerSocket listenOn) throws IOException {
-        //send the value of the port the client will receive messages from to the server
-        int port = listenOn.getLocalPort();
-        String msg = String.valueOf(port);
-        System.out.println("Debug_SendingInfo...");
-        ISay.writeUTF("/initial:"+msg); // write the message
+    //sends name only right now, but will send other stuff
+    private static void sendInitialData(String name, DataOutputStream ISay) throws IOException {
+        //send info to server
+        if(debugMode){System.out.println("Debug_SendingInfo...");}
+        ISay.writeUTF("/initial:"+name); // write the message
         ISay.flush(); // send the message
     }
 
     //gets a message from the user
-    private static String getMessage() {
-        Scanner messageScanner = null;
+    private static String getMessage(Scanner keyboardInput) {
         for (int i = 0; i < attemptsAllowed; i++) {
-            messageScanner = new Scanner(System.in);
-            System.out.println("Input Message");
-            String msg = messageScanner.nextLine();
+            if(debugMode){System.out.println("Debug_WaitingForMessage");}
+            String clientMessage = keyboardInput.nextLine();
 
-            if (msg.startsWith("/initial")) {
+            //if client tries to use /initial, don't let them, and make them try again
+            if (clientMessage.startsWith("/initial")) {
                 System.out.println("Error, /initial is for server use only, please try again");
-                msg = null;
             } else {
-                messageScanner.close();
-                return msg;
+                return clientMessage;
             }
         }
-        messageScanner.close();
         System.out.println("Error: Too many failed attempts");
         return ("FailedAttemptsError");
     }
@@ -108,9 +107,11 @@ public class Main implements Runnable{
             System.out.println("Do you want to quit? (Y/N)"); //y for yes, n for no.
             String clientInput = messageScanner.nextLine();
             if(clientInput.equalsIgnoreCase("y")){
+                messageScanner.close();
                 return false; //exit
             }
             else if(clientInput.equalsIgnoreCase("n")){
+                messageScanner.close();
                 return true; //don't exit
             }
             else{
@@ -119,6 +120,7 @@ public class Main implements Runnable{
         }
         //if you enter something unrecognized more than 5 times, it auto logs you out.
         System.out.println("Error, Automatically logging out");
+        messageScanner.close();
         return true; //exit
     }
 
