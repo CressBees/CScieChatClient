@@ -9,7 +9,7 @@ public class MessageReceiver implements Runnable{
     boolean debugMode = false;
 
     DataInputStream inputStream;
-    public MessageReceiver(DataInputStream IHear, boolean clientActive){
+    public MessageReceiver(DataInputStream IHear){
         inputStream = IHear;
     }
 

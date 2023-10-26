@@ -7,7 +7,6 @@ package com.PTKaBC;
  */
 import java.io.*;
 import java.net.*;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Main implements Runnable{
@@ -26,7 +25,7 @@ public class Main implements Runnable{
             System.out.println("Enter !exit to quit");
             System.out.println("See Readme.txt for details and guide");
 
-            System.out.println("Please choose your name");
+            System.out.println("Please choose your name (Max 20 char)");
             name = keyboardInput.nextLine();
 
             //initialise some stuff
@@ -36,32 +35,34 @@ public class Main implements Runnable{
 
             //Make a message receiver on a thread, so you can send/receive messages independently
             //IMPORTANT, there should only be one of these at any time, having multiple will cause strange errors
-            System.out.println("Debug_MessageReceiver");
-            Thread messageReceiverThread = new Thread(new MessageReceiver(IHear, clientActive));
+            if(debugMode){System.out.println("Debug_MessageReceiver");}
+            Thread messageReceiverThread = new Thread(new MessageReceiver(IHear));
             messageReceiverThread.start();
 
+            //send the clients name to server in initial message
             sendInitialData(name, ISay);
 
+            //main loop
             while (clientActive) {
                 //Set the sent message to be the one the user wants.
                 if(debugMode){System.out.println("Debug_ClientActive");}
                 String msg = getMessage(keyboardInput);
                 if(debugMode){System.out.println("Debug_GotMessage");}
 
+                //if the user inputs a close command, ask them if they want to quit
+                if (msg.equals("!exit") || (msg.equals("/exit"))) {
+                    System.out.println("Do you want to quit?");
+                    if(!endSession(keyboardInput)){
+                        System.out.println("Shutting Down");
+                        clientActive = false;
+                        ISay.close();
+                        mySocket.close();
+                    }
+                }
 
                 System.out.println("Sending: " + msg);
                 ISay.writeUTF(msg); // write the message
                 ISay.flush(); // send the message
-
-                //if the user inputs a close command, ask them if they want to quit
-                if (msg.equals("!exit") || (msg.equals("/exit"))) {
-                    System.out.println("Do you want to quit?");
-                    clientActive = endSession();
-                    if(debugMode){System.out.println("Debug_Exiting");}
-                    mySocket.close();
-                    //close the connection
-                    ISay.close();
-                }
             }
             System.out.println("Shutting Down...");
 
@@ -101,17 +102,14 @@ public class Main implements Runnable{
         return ("FailedAttemptsError");
     }
     //asks if clients wants to stop
-    private static boolean endSession(){
-        Scanner messageScanner = new Scanner(System.in); // create scanner
+    private static boolean endSession(Scanner keyboardInput){
         for(int i = 0; i <= attemptsAllowed; i++){
             System.out.println("Do you want to quit? (Y/N)"); //y for yes, n for no.
-            String clientInput = messageScanner.nextLine();
+            String clientInput = keyboardInput.nextLine();
             if(clientInput.equalsIgnoreCase("y")){
-                messageScanner.close();
                 return false; //exit
             }
             else if(clientInput.equalsIgnoreCase("n")){
-                messageScanner.close();
                 return true; //don't exit
             }
             else{
@@ -120,7 +118,6 @@ public class Main implements Runnable{
         }
         //if you enter something unrecognized more than 5 times, it auto logs you out.
         System.out.println("Error, Automatically logging out");
-        messageScanner.close();
         return true; //exit
     }
 
